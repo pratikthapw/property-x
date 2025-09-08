@@ -19,6 +19,7 @@ import assets from '../data/asset-data.js';
 import axios from 'axios';
 import { fetchCallReadOnlyFunction, fetchContractMapEntry, uintCV, principalCV, Cl } from '@stacks/transactions';
 import { request, openContractCall } from '@stacks/connect';
+import AddRemoveDialog from './add-remove-dialog.jsx';
 
 
 const Marketplace = () => {
@@ -46,26 +47,26 @@ const Marketplace = () => {
   const MARKETPLACE_CONTRACT_NAME_FULFILL = 'marketplace-fulfill';
 
   const getFtImageUrl = async (ftContractAddress, ftContractName) => {
-      try {
-        const options = {
-          contractAddress: ftContractAddress,
-          contractName: ftContractName,
-          functionName: "get-token-uri",
-          functionArgs: [],
-          senderAddress: CONTRACT_ADDRESS,
-          network: "testnet"
-        };
+    try {
+      const options = {
+        contractAddress: ftContractAddress,
+        contractName: ftContractName,
+        functionName: "get-token-uri",
+        functionArgs: [],
+        senderAddress: CONTRACT_ADDRESS,
+        network: "testnet"
+      };
 
-        const response = await fetchCallReadOnlyFunction(options);
-        console.log('Ft url: ', response)
-        const url = response.value.value.value;
-        const axiosResponse = await axios.get(url);
-        console.log('ft image axiosResponse: ', axiosResponse)
-        return axiosResponse.data; // This should be the image URL or an object containing it
-      } catch (e) {
-        console.error("Get Ft image error: ", e);
-        return null;
-      }
+      const response = await fetchCallReadOnlyFunction(options);
+      console.log('Ft url: ', response)
+      const url = response.value.value.value;
+      const axiosResponse = await axios.get(url);
+      console.log('ft image axiosResponse: ', axiosResponse)
+      return axiosResponse.data; // This should be the image URL or an object containing it
+    } catch (e) {
+      console.error("Get Ft image error: ", e);
+      return null;
+    }
   }
 
   const getTokenName = async (ftContractAddress, ftContractName) => {
@@ -134,7 +135,7 @@ const Marketplace = () => {
       const marketplaceContractName = 'marketplace';
 
       console.log('Fetching marketplace listings from the blockchain...');
-      
+
       // Get current block height for expiry checking
       const blockHeightResponse = await fetch('https://api.testnet.hiro.so/extended');
       const blockInfo = await blockHeightResponse.json();
@@ -144,7 +145,7 @@ const Marketplace = () => {
 
       // Fetch FT listings
       const ftListings = [];
-      
+
       const ftNonceResult = await fetchCallReadOnlyFunction({
         contractName: marketplaceContractName,
         contractAddress: contractAddress,
@@ -153,7 +154,7 @@ const Marketplace = () => {
         senderAddress: stxAddress,
         network: 'testnet'
       });
-      
+
       const ftNonce = parseInt(ftNonceResult.value.value);
       console.log("ftNonceResult", ftNonce);
 
@@ -173,7 +174,7 @@ const Marketplace = () => {
             const listing = listingResult.value.value;
             console.log("listing", listing);
             const expiry = Number(listing.expiry.value);
-            
+
             // Only include non-expired listings
             if (currentBlockHeight < expiry) {
               const processedListing = {
@@ -217,7 +218,7 @@ const Marketplace = () => {
         ftBalances.map(async (ft) => {
           const ftContract = ft.token.split('::')[0];
           const [ftContractAddress, ftContractName] = ftContract.split('.');
-          
+
           const isWhitelisted = await isFtWhitelisted(ftContractAddress, ftContractName);
           if (isWhitelisted === false) {
             return null;
@@ -265,7 +266,7 @@ const Marketplace = () => {
       console.log('Marketplace listings:', enrichedMarketplaceListings.length);
 
       console.log("ownedNFts with images", ownedNftsWithImages);
-      
+
       return { nftListings: enrichedMarketplaceListings, userNfts: enrichedUserNfts, myListings: enrichedUserListings };
 
     } catch (error) {
@@ -346,7 +347,7 @@ const Marketplace = () => {
       });
       return;
     }
-    
+
     if (amount > parseInt(selectedNft.balance, 10)) {
       toast({
         title: 'Insufficient Balance',
@@ -356,7 +357,7 @@ const Marketplace = () => {
       return;
     }
 
-     
+
 
     try {
       setIsLoading(true);
@@ -372,8 +373,8 @@ const Marketplace = () => {
 
       const finalAmount = listingDetails.amount * 1000000
       const finalPrice = listingDetails.price * 1000000
-      
-      const result = await request("stx_callContract",{
+
+      const result = await request("stx_callContract", {
         contract: `${CONTRACT_ADDRESS}.${MARKETPLACE_CONTRACT_NAME}`,
         functionName: 'list-asset-ft',
         functionArgs: [
@@ -423,9 +424,9 @@ const Marketplace = () => {
       const assetContractParts = listing.ftAssetContract.split('.');
       const assetContractAddress = assetContractParts[0];
       const assetContractName = assetContractParts[1];
-      
 
-      const result = await request("stx_callContract",{
+
+      const result = await request("stx_callContract", {
         contract: `${CONTRACT_ADDRESS}.${MARKETPLACE_CONTRACT_NAME}`,
         functionName: 'cancel-listing-ft',
         functionArgs: [
@@ -478,19 +479,19 @@ const Marketplace = () => {
       const assetContractName = assetContractParts[1];
 
       functionArgs.push(Cl.uint(listing.id));
-      functionArgs.push(Cl.contractPrincipal(assetContractAddress,assetContractName));
+      functionArgs.push(Cl.contractPrincipal(assetContractAddress, assetContractName));
 
       if (listing.paymentAssetContract) {
         functionName = 'fulfil-ft-listing-ft';
-          const paymentContractParts = listing.paymentAssetContract.split('.');
+        const paymentContractParts = listing.paymentAssetContract.split('.');
         const paymentContractAddress = paymentContractParts[0];
         const paymentContractName = paymentContractParts[1];
         functionArgs.push(Cl.contractPrincipal(paymentContractAddress, paymentContractName));
       } else {
         functionName = 'fulfil-listing-ft-stx';
       }
-      
-      const result = await request("stx_callContract",{
+
+      const result = await request("stx_callContract", {
         contract: `${CONTRACT_ADDRESS}.${MARKETPLACE_CONTRACT_NAME_FULFILL}`,
         functionName: functionName,
         functionArgs: functionArgs,
@@ -537,26 +538,26 @@ const Marketplace = () => {
         </p>
       </div>
 
-      <Tabs 
-        value={activeTab} 
+      <Tabs
+        value={activeTab}
         onValueChange={setActiveTab}
         className="w-full mb-8"
       >
         <TabsList className="grid grid-cols-3 max-w-xl mx-auto mb-8 bg-gray-800/80 border border-gray-700/50 rounded-lg p-1">
-          <TabsTrigger 
-            value="browse" 
+          <TabsTrigger
+            value="browse"
             className={`py-2 px-4 ${activeTab === 'browse' ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white' : 'bg-transparent text-gray-300 hover:text-gray-100'} rounded-md transition-all duration-300`}
           >
             <i className="fas fa-store mr-2"></i> Browse
           </TabsTrigger>
-          <TabsTrigger 
-            value="my-nfts" 
+          <TabsTrigger
+            value="my-nfts"
             className={`py-2 px-4 ${activeTab === 'my-nfts' ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white' : 'bg-transparent text-gray-300 hover:text-gray-100'} rounded-md transition-all duration-300`}
           >
             <i className="fas fa-image mr-2"></i> My APTs
           </TabsTrigger>
-          <TabsTrigger 
-            value="my-listings" 
+          <TabsTrigger
+            value="my-listings"
             className={`py-2 px-4 ${activeTab === 'my-listings' ? 'bg-gradient-to-r from-teal-500 to-purple-600 text-white' : 'bg-transparent text-gray-300 hover:text-gray-100'} rounded-md transition-all duration-300`}
           >
             <i className="fas fa-tag mr-2"></i> My Listings
@@ -578,7 +579,7 @@ const Marketplace = () => {
             </div>
           ) : (
             <>
-              {nftListings.length === 0  ? (
+              {nftListings.length === 0 ? (
                 <div className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg p-8 text-center border border-gray-700/30">
                   <div className="w-16 h-16 mx-auto bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
                     <i className="fas fa-store text-gray-400 text-2xl"></i>
@@ -591,75 +592,76 @@ const Marketplace = () => {
                   {nftListings.map((listing) => {
                     const assetData = listing.imageUrl?.asset || listing;
                     return (
-                    <div key={listing.id} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
-                      <div className="h-48 bg-gray-800/50 overflow-hidden">
-                        <img 
-                          src={assetData.image || `https://via.placeholder.com/400x300?text=${assetData.name || 'No Image'}`}
-                          alt={assetData.name || (listing.type === 'ft' ? listing.ftAssetContract : listing.nftAssetContract)}
-                          className="w-full h-full object-contain cursor-pointer"
-                          onClick={() => handleAssetClick(listing)}
-                        />
-                      </div>
-                      <div className="p-4">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-semibold text-gray-100">
-                            {assetData.name || (listing.type === 'ft' ? listing.ftAssetContract : listing.nftAssetContract)}
-                          </h3>
-                          <div className="px-2 py-1 bg-gray-800/50 rounded text-xs font-medium text-gray-300 capitalize">
-                            {listing.type === 'ft' ? 'Token' : 'NFT'}
-                          </div>
-                        </div>
-                        <p className="mt-2 text-sm text-gray-300 line-clamp-2">Owner: {shortenAddress(listing.maker, 6)}</p>
-
-                        <div className="mt-4 grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <p className="text-xs text-gray-400">Price</p>
-                            <p className="text-sm font-semibold text-teal-300">{listing.price / 1000000}</p>
-                          </div>
-                          {listing.type === 'ft' && (
-                            <div>
-                              <p className="text-xs text-gray-400">Amount</p>
-                              <p className="text-sm font-semibold text-gray-100">{listing.tokenAmount / 1000000}</p>
-                            </div>
-                          )}
-                          {listing.type === 'nft' && (
-                            <div>
-                              <p className="text-xs text-gray-400">Token ID</p>
-                              <p className="text-sm font-semibold text-gray-100">{listing.tokenId}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs text-gray-400">Payment</p>
-                            <p className="text-sm font-semibold text-gray-100">
-                              {shortenAddress(listing.paymentAssetContract, 6)} {listing.paymentAssetContract ? 'Token' : 'STX'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-400">Expiry Block</p>
-                            <p className="text-sm font-semibold text-teal-300">{listing.expiry}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            className="flex-1 border-gray-700/50 text-gray-300 hover:bg-gray-800/50 hover:border-teal-400/50 transition-all duration-300"
+                      <div key={listing.id} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
+                        <div className="h-48 bg-gray-800/50 overflow-hidden">
+                          <img
+                            src={assetData.image || `https://via.placeholder.com/400x300?text=${assetData.name || 'No Image'}`}
+                            alt={assetData.name || (listing.type === 'ft' ? listing.ftAssetContract : listing.nftAssetContract)}
+                            className="w-full h-full object-contain cursor-pointer"
                             onClick={() => handleAssetClick(listing)}
-                          >
-                            View Details
-                          </Button>
-                          <Button
-                            className="flex-1 bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white transition-all duration-300 hover:shadow-teal-500/30"
-                            onClick={() => handlePurchaseNft(listing)}
-                          >
-                            Buy Now
-                          </Button>
+                          />
                         </div>
+                        <div className="p-4">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-semibold text-gray-100">
+                              {assetData.name || (listing.type === 'ft' ? listing.ftAssetContract : listing.nftAssetContract)}
+                            </h3>
+                            <div className="px-2 py-1 bg-gray-800/50 rounded text-xs font-medium text-gray-300 capitalize">
+                              {listing.type === 'ft' ? 'Token' : 'NFT'}
+                            </div>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-300 line-clamp-2">Owner: {shortenAddress(listing.maker, 6)}</p>
 
-                        
+                          <div className="mt-4 grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <p className="text-xs text-gray-400">Price</p>
+                              <p className="text-sm font-semibold text-teal-300">{listing.price / 1000000}</p>
+                            </div>
+                            {listing.type === 'ft' && (
+                              <div>
+                                <p className="text-xs text-gray-400">Amount</p>
+                                <p className="text-sm font-semibold text-gray-100">{listing.tokenAmount / 1000000}</p>
+                              </div>
+                            )}
+                            {listing.type === 'nft' && (
+                              <div>
+                                <p className="text-xs text-gray-400">Token ID</p>
+                                <p className="text-sm font-semibold text-gray-100">{listing.tokenId}</p>
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-xs text-gray-400">Payment</p>
+                              <p className="text-sm font-semibold text-gray-100">
+                                {shortenAddress(listing.paymentAssetContract, 6)} {listing.paymentAssetContract ? 'Token' : 'STX'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-400">Expiry Block</p>
+                              <p className="text-sm font-semibold text-teal-300">{listing.expiry}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              className="flex-1 border-gray-700/50 text-gray-300 hover:bg-gray-800/50 hover:border-teal-400/50 transition-all duration-300"
+                              onClick={() => handleAssetClick(listing)}
+                            >
+                              View Details
+                            </Button>
+                            <Button
+                              className="flex-1 bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white transition-all duration-300 hover:shadow-teal-500/30"
+                              onClick={() => handlePurchaseNft(listing)}
+                            >
+                              Buy Now
+                            </Button>
+                          </div>
+
+
+                        </div>
                       </div>
-                    </div>
-                  )})}
+                    )
+                  })}
                   {assets.map((asset) => (
                     <div key={asset.id} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
                       <div className="h-48 bg-gray-800/50 overflow-hidden">
@@ -682,7 +684,7 @@ const Marketplace = () => {
                         <p className="mt-2 text-sm text-gray-300 line-clamp-2">{asset.description}</p>
 
                         <div className="mt-4 grid grid-cols-2 gap-4 mb-4 text-5xl">
-                         Coming Soon.....
+                          Coming Soon.....
                         </div>
 
 
@@ -718,7 +720,7 @@ const Marketplace = () => {
                   <h3 className="text-lg font-medium text-gray-100 mb-2">No APTs Found</h3>
                   <p className="text-gray-300 mb-6">You don't own any property APTs yet.</p>
                   <Button className="bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white px-6 py-2 rounded-lg text-base font-medium transition-all duration-300 hover:shadow-teal-500/30"
-                   onClick={() => setActiveTab('browse')}
+                    onClick={() => setActiveTab('browse')}
                   >
                     Explore Marketplace
                   </Button>
@@ -728,38 +730,39 @@ const Marketplace = () => {
                   {userNfts.map((nft, index) => {
                     const assetData = nft.imageUrl?.asset || nft;
                     return (
-                    <div key={index} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
-                      <div className="p-4 flex items-center">
-                        <img 
-                          src={assetData.image || `https://via.placeholder.com/400x300?text=${assetData.name || 'No Image'}`}
-                          alt={assetData.name ?? 'unknown'}
-                          className="w-24 h-24 object-cover cursor-pointer rounded-lg mr-4"
-                          loading='lazy'
-                          onClick={() => handleAssetClick(nft)}
-                        />
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-100">{assetData.name ?? 'unknown'}</h3>
-                          <p className="text-xs text-gray-400">{assetData.symbol}</p>
-                          {/* Add other NFT details here */}
-                          <div className="mt-4 grid grid-cols-2 gap-4 mb-4">
-                            <div> 
-                              <p className="text-xs text-gray-400">Balance</p>
-                              <p className="text-sm font-semibold text-teal-300">{nft.balance / 1000000}</p>
+                      <div key={index} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
+                        <div className="p-4 flex items-center">
+                          <img
+                            src={assetData.image || `https://via.placeholder.com/400x300?text=${assetData.name || 'No Image'}`}
+                            alt={assetData.name ?? 'unknown'}
+                            className="w-24 h-24 object-cover cursor-pointer rounded-lg mr-4"
+                            loading='lazy'
+                            onClick={() => handleAssetClick(nft)}
+                          />
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-100">{assetData.name ?? 'unknown'}</h3>
+                            <p className="text-xs text-gray-400">{assetData.symbol}</p>
+                            {/* Add other NFT details here */}
+                            <div className="mt-4 grid grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <p className="text-xs text-gray-400">Balance</p>
+                                <p className="text-sm font-semibold text-teal-300">{nft.balance / 1000000}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex space-x-2">
+                              <Button
+                                className="flex-1 bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white transition-all duration-300 hover:shadow-teal-500/30"
+                                onClick={() => handleListNft(nft)}
+                              >
+                                List for Sale
+                              </Button>
                             </div>
                           </div>
-
-                          <div className="flex space-x-2">
-                            <Button
-                              className="flex-1 bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white transition-all duration-300 hover:shadow-teal-500/30"
-                              onClick={() => handleListNft(nft)}
-                            >
-                              List for Sale
-                            </Button>
-                          </div>  
                         </div>
                       </div>
-                    </div>
-                  )})}
+                    )
+                  })}
                 </div>
               )}
             </>
@@ -788,7 +791,7 @@ const Marketplace = () => {
                   </div>
                   <h3 className="text-lg font-medium text-gray-100 mb-2">No Active Listings</h3>
                   <p className="text-gray-300 mb-6">You don't have any active listings. List your APTs to sell them.</p>
-                  <Button 
+                  <Button
                     className="bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white px-6 py-2 rounded-lg text-base font-medium transition-all duration-300 hover:shadow-teal-500/30"
                     onClick={() => setActiveTab('my-nfts')}
                   >
@@ -800,59 +803,64 @@ const Marketplace = () => {
                   {myListings.map((listing) => {
                     const assetData = listing.imageUrl?.asset || listing;
                     return (
-                    <div key={listing.id} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
-                      <div className="h-48 bg-gray-800/50 overflow-hidden">
-                        <img 
-                          src={assetData.image || `https://via.placeholder.com/400x300?text=${assetData.name || 'No Image'}`}
-                          alt={assetData.name}
-                          className="w-full h-full object-contain cursor-pointer"
-                          onClick={() => handleAssetClick(listing)}
-                        />
-                      </div>
-                      <div className="p-4">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-semibold text-gray-100">{assetData.name}</h3>
-                          <div className="px-2 py-1 bg-gray-800/50 rounded text-xs font-medium text-gray-300 capitalize">
-                            {assetData.symbol}
-                          </div>
+                      <div key={listing.id} className="bg-gradient-to-b from-gray-800/50 to-gray-800/80 rounded-lg shadow-lg overflow-hidden border border-gray-700/30 hover:border-teal-400/50 transition-all duration-300 hover:shadow-teal-500/20">
+                        <div className="h-48 bg-gray-800/50 overflow-hidden">
+                          <img
+                            src={assetData.image || `https://via.placeholder.com/400x300?text=${assetData.name || 'No Image'}`}
+                            alt={assetData.name}
+                            className="w-full h-full object-contain cursor-pointer"
+                            onClick={() => handleAssetClick(listing)}
+                          />
                         </div>
-                        <p className="mt-2 text-sm text-gray-300 line-clamp-2">{assetData.description}</p>
-
-                        <div className="mt-4 grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <p className="text-xs text-gray-400">Price</p>
-                            <p className="text-sm font-semibold text-teal-300">{listing.price  / 1000000}</p>
+                        <div className="p-4">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-semibold text-gray-100">{assetData.name}</h3>
+                            <div className="px-2 py-1 bg-gray-800/50 rounded text-xs font-medium text-gray-300 capitalize">
+                              {assetData.symbol}
+                            </div>
                           </div>
-                          <div>
+                          <p className="mt-2 text-sm text-gray-300 line-clamp-2">{assetData.description}</p>
+
+                          <div className="mt-4 grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <p className="text-xs text-gray-400">Price</p>
+                              <p className="text-sm font-semibold text-teal-300">{listing.price / 1000000}</p>
+                            </div>
+                            <div>
                               <p className="text-xs text-gray-400">Amount</p>
                               <p className="text-sm font-semibold text-gray-100">{listing.tokenAmount / 1000000}</p>
                             </div>
-                          <div>
-                            <p className="text-xs text-gray-400">Payment</p>
-                            <p className="text-sm font-semibold text-gray-100">
-                              {listing.paymentAssetContract ? shortenAddress(listing.paymentAssetContract, 6) : 'STX'}
-                            </p>
+                            <div>
+                              <p className="text-xs text-gray-400">Payment</p>
+                              <p className="text-sm font-semibold text-gray-100">
+                                {listing.paymentAssetContract ? shortenAddress(listing.paymentAssetContract, 6) : 'STX'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-400">Expiry Block</p>
+                              <p className="text-sm font-semibold text-teal-300">{listing.expiry}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-xs text-gray-400">Expiry Block</p>
-                            <p className="text-sm font-semibold text-teal-300">{listing.expiry}</p>
+
+                          <div className="flex flex-col gap-4">
+                            <div className='flex gap-2 w-full'>
+                              <AddRemoveDialog type="add" />
+                              <AddRemoveDialog type="remove" />
+                            </div>
+                            <Button
+                              variant="outline"
+                              className="flex-1 border-red-700/50 text-red-400 hover:bg-gray-800/50 hover:border-red-400/50 transition-all duration-300"
+                              onClick={() => handleCancelListing(listing)}
+                            >
+                              Cancel Listing
+                            </Button>
                           </div>
-                        </div>
 
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            className="flex-1 border-red-700/50 text-red-400 hover:bg-gray-800/50 hover:border-red-400/50 transition-all duration-300"
-                            onClick={() => handleCancelListing(listing)}
-                          >
-                            Cancel Listing
-                          </Button>
-                        </div>
 
-                        
+                        </div>
                       </div>
-                    </div>
-                  )})}
+                    )
+                  })}
                 </div>
               )}
             </>
@@ -874,8 +882,8 @@ const Marketplace = () => {
             <div className="py-4">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-gray-800/50 rounded-lg overflow-hidden border border-gray-700/50">
-                  <img 
-                    src={selectedNft.imageUrl?.image} 
+                  <img
+                    src={selectedNft.imageUrl?.image}
                     alt={selectedNft.name}
                     className="w-full h-full object-cover"
                   />
@@ -893,7 +901,7 @@ const Marketplace = () => {
                       type="number"
                       id="listing-price"
                       value={listingDetails.price}
-                      onChange={(e) => setListingDetails({...listingDetails, price: e.target.value})}
+                      onChange={(e) => setListingDetails({ ...listingDetails, price: e.target.value })}
                       className="block w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300"
                       placeholder="0.00"
                     />
@@ -907,7 +915,7 @@ const Marketplace = () => {
                       type="number"
                       id="listing-amount"
                       value={listingDetails.amount}
-                      onChange={(e) => setListingDetails({...listingDetails, amount: e.target.value})}
+                      onChange={(e) => setListingDetails({ ...listingDetails, amount: e.target.value })}
                       className="block w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300"
                       placeholder="0"
                     />
@@ -922,7 +930,7 @@ const Marketplace = () => {
                     type="text"
                     id="ft-asset-contract"
                     value={listingDetails.ftAssetContract}
-                    onChange={(e) => setListingDetails({...listingDetails, ftAssetContract: e.target.value})}
+                    onChange={(e) => setListingDetails({ ...listingDetails, ftAssetContract: e.target.value })}
                     className="block w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300"
                     placeholder="e.g. ST1..."
                     disabled
@@ -937,7 +945,7 @@ const Marketplace = () => {
                     type="text"
                     id="payment-asset-contract"
                     value={listingDetails.paymentAssetContract}
-                    onChange={(e) => setListingDetails({...listingDetails, paymentAssetContract: e.target.value})}
+                    onChange={(e) => setListingDetails({ ...listingDetails, paymentAssetContract: e.target.value })}
                     className="block w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300"
                     placeholder="e.g. ST1... (optional)"
                   />
@@ -945,9 +953,9 @@ const Marketplace = () => {
 
                 <div>
                   <label htmlFor="expiry-days" className="block text-sm font-medium text-gray-400 mb-1">Listing Duration</label>
-                  <Select 
-                    value={listingDetails.expiryDays.toString()} 
-                    onValueChange={(v) => setListingDetails({...listingDetails, expiryDays: parseInt(v)})}
+                  <Select
+                    value={listingDetails.expiryDays.toString()}
+                    onValueChange={(v) => setListingDetails({ ...listingDetails, expiryDays: parseInt(v) })}
                   >
                     <SelectTrigger className="w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300">
                       <SelectValue />
@@ -970,7 +978,7 @@ const Marketplace = () => {
                     type="text"
                     id="target-buyer"
                     value={listingDetails.targetBuyer}
-                    onChange={(e) => setListingDetails({...listingDetails, targetBuyer: e.target.value})}
+                    onChange={(e) => setListingDetails({ ...listingDetails, targetBuyer: e.target.value })}
                     className="block w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300"
                     placeholder="Stacks address (leave empty for public listing)"
                   />
@@ -983,15 +991,15 @@ const Marketplace = () => {
           )}
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              className="border-gray-700/50 text-gray-300 hover:bg-gray-800/50 transition-all duration-300" 
+            <Button
+              variant="outline"
+              className="border-gray-700/50 text-gray-300 hover:bg-gray-800/50 transition-all duration-300"
               onClick={() => setShowListModal(false)}
             >
               Cancel
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white transition-all duration-300 hover:shadow-teal-500/30" 
+            <Button
+              className="bg-gradient-to-r from-teal-500 to-purple-600 hover:from-teal-400 hover:to-purple-500 text-white transition-all duration-300 hover:shadow-teal-500/30"
               onClick={handleSubmitListing}
               disabled={isloading || !listingDetails.price}
             >
@@ -1005,10 +1013,10 @@ const Marketplace = () => {
         </DialogContent>
       </Dialog>
       {/* Asset Detail Modal */}
-      <AssetDetailModal 
-        open={assetDetailModal} 
-        onOpenChange={setAssetDetailModal} 
-        asset={selectedAsset} 
+      <AssetDetailModal
+        open={assetDetailModal}
+        onOpenChange={setAssetDetailModal}
+        asset={selectedAsset}
       />
     </div>
   );
