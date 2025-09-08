@@ -21,7 +21,6 @@ import { fetchCallReadOnlyFunction, fetchContractMapEntry, uintCV, principalCV, 
 import { request, openContractCall } from '@stacks/connect';
 import AddRemoveDialog from './add-remove-dialog.jsx';
 
-
 const Marketplace = () => {
   const { connected, stxAddress, callContract, getNftData, getAssetData, getMarketplaceListings, fetchIpfsMetadata, openContractCall } = useWallet();
   const { toast } = useToast();
@@ -373,6 +372,7 @@ const Marketplace = () => {
 
       const finalAmount = listingDetails.amount * 1000000
       const finalPrice = listingDetails.price * 1000000
+      console.log('asset contract', listingDetails.paymentAssetContract)
 
       const result = await request("stx_callContract", {
         contract: `${CONTRACT_ADDRESS}.${MARKETPLACE_CONTRACT_NAME}`,
@@ -384,7 +384,7 @@ const Marketplace = () => {
             amt: Cl.uint(finalAmount),
             expiry: Cl.uint(finalExpiry),
             price: Cl.uint(finalPrice),
-            "payment-asset-contract": listingDetails.paymentAssetContract ? Cl.some(Cl.principal(listingDetails.paymentAssetContract)) : Cl.none()
+            "payment-asset-contract": listingDetails.paymentAssetContract === 'stx' ? Cl.none() : Cl.some(Cl.principal(listingDetails.paymentAssetContract))
           })
 
         ],
@@ -938,17 +938,22 @@ const Marketplace = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="payment-asset-contract" className="block text-sm font-medium text-gray-400 mb-1">
-                    Payment Asset Contract Address
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Payment Asset
                   </label>
-                  <Input
-                    type="text"
-                    id="payment-asset-contract"
+                  <Select
                     value={listingDetails.paymentAssetContract}
-                    onChange={(e) => setListingDetails({ ...listingDetails, paymentAssetContract: e.target.value })}
-                    className="block w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300"
-                    placeholder="e.g. ST1... (optional)"
-                  />
+                    onValueChange={(value) => setListingDetails({ ...listingDetails, paymentAssetContract: value })}
+                  >
+                    <SelectTrigger className="w-full bg-gray-900/50 border-gray-700 text-gray-100 focus:ring-teal-300 focus:border-teal-300">
+                      <SelectValue placeholder="Select payment asset" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectItem value="stx">STX</SelectItem>
+                      <SelectItem value="SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.usdh-token-v1">Hermetica USDh</SelectItem>
+                      <SelectItem value="SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token">sBTC</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
