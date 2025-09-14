@@ -57,10 +57,8 @@ const Marketplace = () => {
       };
 
       const response = await fetchCallReadOnlyFunction(options);
-      console.log('Ft url: ', response)
       const url = response.value.value.value;
       const axiosResponse = await axios.get(url);
-      console.log('ft image axiosResponse: ', axiosResponse)
       return axiosResponse.data; // This should be the image URL or an object containing it
     } catch (e) {
       console.error("Get Ft image error: ", e);
@@ -118,7 +116,6 @@ const Marketplace = () => {
       };
 
       const response = await fetchCallReadOnlyFunction(options);
-      console.log("is white listed: ", JSON.parse(response.type));
       return JSON.parse(response.type);
     } catch (e) {
       console.error("Whitelist check error: ", e);

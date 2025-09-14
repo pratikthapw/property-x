@@ -9,8 +9,6 @@
  * @returns {Promise<Array>} Array of listings
  */
 export const fetchNFTListings = async (contractAddress, contractName) => {
-  console.log(`Fetching NFT listings for ${contractAddress}.${contractName}`);
-  
   try {
     // In a real implementation, we would query the Stacks API:
     // const url = `https://stacks-node-api.testnet.stacks.co/extended/v1/contract/${contractAddress}/${contractName}/transactions`;

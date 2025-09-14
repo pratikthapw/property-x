@@ -77,7 +77,6 @@ export const WalletProvider = ({ children }) => {
         //                 ],
         //   network: 'testnet'
         // })
-        console.log("get-balance responce: ", parseInt(result.value.value));
         setBalance({ pxt: parseInt(result.value.value), btc: 0 });
       }
     } catch (error) {
@@ -154,11 +153,9 @@ export const WalletProvider = ({ children }) => {
           icon: window.location.origin + "/icon.png",
         },
         onFinish: (data) => {
-          console.log("Transaction submitted:", data);
           return data;
         },
         onCancel: () => {
-          console.log("Transaction was canceled");
           throw new Error("Transaction canceled by user");
         },
       };
@@ -248,8 +245,6 @@ export const WalletProvider = ({ children }) => {
           network: "testnet",
         };
         const response = await fetchCallReadOnlyFunction(options);
-
-        console.log("admin", response);
 
         if (response.type === "err") {
           return false;

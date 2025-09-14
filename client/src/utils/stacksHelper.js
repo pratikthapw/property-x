@@ -84,12 +84,10 @@ export function cvToString(cv) {
 export async function simulateContractCall(params) {
   const { contractAddress, contractName, functionName, functionArgs, senderAddress } = params;
   
-  console.log(`Calling contract ${contractAddress}.${contractName}::${functionName}`);
   
   // Handle specific contract functions based on the contract and function name
   if (contractName === 'rws' && functionName === 'get-balance') {
     const address = functionArgs[0]?.address || 'unknown';
-    console.log(`Checking balance for address: ${address}`);
     // Return a simulated PXT balance (100-1000)
     const balance = Math.floor(Math.random() * 900) + 100;
     return {
@@ -179,7 +177,6 @@ export async function simulateContractCall(params) {
 export async function simulateContractWrite(params) {
   const { contractAddress, contractName, functionName, functionArgs } = params;
   
-  console.log(`Simulating write to ${contractAddress}.${contractName}::${functionName}`);
   
   // Generate a fake transaction ID
   const txId = `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;

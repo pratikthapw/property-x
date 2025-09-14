@@ -20,10 +20,8 @@ const getFtImageUrl = async (ftContractAddress, ftContractName, stxAddress) => {
     };
 
     const response = await fetchCallReadOnlyFunction(options);
-    console.log('Ft url: ', response)
     const url = response.value.value.value;
     const axiosResponse = await axios.get(url);
-    console.log('ft image axiosResponse: ', axiosResponse)
     return axiosResponse.data; // This should be the image URL or an object containing it
   } catch (e) {
     console.error("Get Ft image error: ", e);
@@ -107,16 +105,10 @@ export const fetchUserApts = async (stxAddress, toast) => {
             return null;
           }
 
-          console.log("ftContract address: ", ftContractAddress)
-          console.log("ftContract address: ", ftContractName)
-
 
           const imageData = await getFtImageUrl(ftContractAddress, ftContractName, stxAddress);
           const name = await getTokenName(ftContractAddress, ftContractName, stxAddress);
           const symbol = await getTokenSymbol(ftContractAddress, ftContractName, stxAddress);
-          console.log("symbol: ", symbol)
-          console.log("imageData: ", imageData)
-          console.log("name: ", name)
 
 
           // Fetch staked amount
@@ -134,15 +126,10 @@ export const fetchUserApts = async (stxAddress, toast) => {
               mapKey: Cl.principal(mapKey),
               network: 'testnet'
             });
-            console.log("stake amount: ",stakedAmount)
-            console.log("stake amount: ",stakedAmountResult.value.value)
 
             if (stakedAmountResult && stakedAmountResult.value.value.amount.value && stakedAmountResult.value.value.time.value ) {
               stakedAmount = Number(stakedAmountResult.value.value.amount.value);
               unlockTime = Number(stakedAmountResult.value.value.time.value);
-
-            console.log("stake amount: ",stakedAmount)
-
             }
           } catch (e) {
             console.error(`Could not fetch staked amount for ${symbol}`, e);

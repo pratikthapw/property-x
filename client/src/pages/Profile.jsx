@@ -77,8 +77,6 @@ const Profile = () => {
 
     const assetData = selectedApt.imageUrl?.asset || selectedApt;
     const assetDataAll = selectedApt;
-    console.log("asset data: ", assetData)
-    console.log("asset data all: ", assetDataAll)
 
     const tokenContractAddress = selectedApt.token.split('::')[0];
     
@@ -96,23 +94,12 @@ const Profile = () => {
     const functionName = `lock-${assetDataAll.symbol}`;
     const amount = parseInt(stakingDetails.amount, 10) * 1000000; // Assuming 8 decimal places
 
-    console.log("contract address:", contractAddress)
-    console.log("contract name:", contractName)
-    console.log("funtionName", functionName)
-
-
     try {
       const blockHeightResponse = await fetch('https://api.testnet.hiro.so/extended');
       const blockInfo = await blockHeightResponse.json();
-      console.log("blockInfo", blockInfo);
       const currentBlockHeight = blockInfo.chain_tip.block_height;
-      console.log("currentBlockHeight", currentBlockHeight);
 
       const finalDuration = currentBlockHeight + stakingDetails.duration;
-
-      console.log("final Duration: ", finalDuration);
-      
-
 
       await request("stx_callContract", {
         contract: `${contractAddress}.${contractName}`,

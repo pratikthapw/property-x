@@ -58,7 +58,6 @@ const Staking = () => {
         network: 'testnet',
         postConditionMode: 'allow'
       });
-      console.log(result)
 
       if (result) {
         toast({

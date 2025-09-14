@@ -5,13 +5,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-FROM deps as builder
+FROM deps AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM base as runner
+FROM base AS runner
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 RUN npm install -g serve
