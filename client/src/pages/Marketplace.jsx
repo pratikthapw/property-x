@@ -130,14 +130,11 @@ const Marketplace = () => {
       const contractAddress = 'ST1JG6WDA1B4PZD8JZY95RPNKFFF5YKPV57BHPC9G';
       const marketplaceContractName = 'marketplace';
 
-      console.log('Fetching marketplace listings from the blockchain...');
 
       // Get current block height for expiry checking
       const blockHeightResponse = await fetch('https://api.testnet.hiro.so/extended');
       const blockInfo = await blockHeightResponse.json();
-      console.log("blockInfo", blockInfo);
       const currentBlockHeight = blockInfo.chain_tip.block_height;
-      console.log("currentBlockHeight", currentBlockHeight);
 
       // Fetch FT listings
       const ftListings = [];
@@ -152,7 +149,6 @@ const Marketplace = () => {
       });
 
       const ftNonce = parseInt(ftNonceResult.value.value);
-      console.log("ftNonceResult", ftNonce);
 
       // Fetch FT listings
       for (let i = 0; i < ftNonce; i++) {
@@ -166,9 +162,7 @@ const Marketplace = () => {
           });
 
           if (listingResult && listingResult.value) {
-            console.log("listingResult", listingResult);
             const listing = listingResult.value.value;
-            console.log("listing", listing);
             const expiry = Number(listing.expiry.value);
 
             // Only include non-expired listings
@@ -193,7 +187,6 @@ const Marketplace = () => {
             }
           }
         } catch (error) {
-          console.log(`No FT listing found at index ${i}`);
           console.error("error at ft map get", error);
 
         }
@@ -256,12 +249,6 @@ const Marketplace = () => {
           return { ...nft, name, imageUrl, symbol };
         }))
       ]);
-
-      console.log('Found listings:', allListings.length);
-      console.log('User listings:', enrichedUserListings.length);
-      console.log('Marketplace listings:', enrichedMarketplaceListings.length);
-
-      console.log("ownedNFts with images", ownedNftsWithImages);
 
       return { nftListings: enrichedMarketplaceListings, userNfts: enrichedUserNfts, myListings: enrichedUserListings };
 
@@ -360,16 +347,12 @@ const Marketplace = () => {
       // Get current block height for expiry checking
       const blockHeightResponse = await fetch('https://api.testnet.hiro.so/extended');
       const blockInfo = await blockHeightResponse.json();
-      console.log("blockInfo", blockInfo);
       const currentBlockHeight = blockInfo.chain_tip.block_height;
-      console.log("currentBlockHeight", currentBlockHeight);
 
       const finalExpiry = currentBlockHeight + parseInt(listingDetails.expiryDays);
-      console.log("Final expiry: ", finalExpiry)
 
       const finalAmount = listingDetails.amount * 1000000
       const finalPrice = listingDetails.price * 1000000
-      console.log('asset contract', listingDetails.paymentAssetContract)
 
       const result = await request("stx_callContract", {
         contract: `${CONTRACT_ADDRESS}.${MARKETPLACE_CONTRACT_NAME}`,
@@ -389,7 +372,6 @@ const Marketplace = () => {
         postConditionMode: 'allow'
       });
 
-      console.log('handleSubmitListing: ', result)
       setShowListModal(false);
       window.location.reload();
 
@@ -434,7 +416,6 @@ const Marketplace = () => {
         postConditionMode: 'allow'
       });
 
-      console.log('handleSubmitListing: ', result)
       window.location.reload();
 
 
@@ -496,7 +477,6 @@ const Marketplace = () => {
         postConditionMode: 'allow'
       });
 
-      console.log('result of buy ft', result)
       window.location.reload();
 
 
